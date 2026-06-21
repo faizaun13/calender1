@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tribal Calendar</title>
+    
+    <!-- PWA Installation Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Tribal Cal">
+    
+    <!-- Embedded Manifest Data Link for Standalone Mobile Install -->
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIlRyaWJhbCBDYWxlbmRhciIsCiAgInNob3J0X25hbWUiOiAiVHJpYmFsIENhbCIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjMDkwYjBlIiwKICAidGhlbWVfY29sb3IiOiAiMDkwYjBlIiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiZGF0YTppbWFnZS9zdmcreG1sO3V0ZjgsPHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCA1MTIgNTEyJyBmaWxsPSclMjNmNTllMGInPjxyZWN0IHdpZHRoPSc1MTInIGhlaWdodD0nNTEyJyByeD0nMTAwJyBmaWxsPSclMjMwOTBiMGUnLz48Y2lyY2xlIGN4PScyNTYnIGN5PScyNTYnIHI9JzE4MCcgc3Ryb2tlPSclMjNmNTllMGInIHN0cm9rZS13aWR0aD0nMjQnIGZpbGw9J25vbmUnLz48Y2lyY2xlIGN4PScyNTYnIGN5PScyNTYnIHI9JzEyMCcgc3Ryb2tlPSclMjMxMGI5ODEnIHN0cm9rZS13aWR0aD0nMjQnIGZpbGw9J25vbmUnLz48L3N2Zz4iLAogICAgICAic2l6ZXMiOiAiNTEyeDUxMiIsCiAgICAgICJ0eXBlIjogImltYWdlL3N2Zyt4bWwiLAogICAgICAicHVycG9zZSI6ICJhbnkgbWFza2FibGUiCiAgICB9CiAgXQp9">
+    
+    <!-- Apple Touch Icon -->
+    <link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512' fill='%23f59e0b'><rect width='512' height='512' rx='100' fill='%23090b0e'/><circle cx='256' cy='256' r='180' stroke='%23f59e0b' stroke-width='24' fill='none'/><circle cx='256' cy='256' r='120' stroke='%2310b981' stroke-width='24' fill='none'/></svg>">
+
+    <!-- Load Tailwind CSS for modern responsive utility design -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --color-bg: #090b0e;
+            --color-surface: #12161f;
+            --color-inner: #10b981;
+            --color-outer: #f59e0b;
+            --color-reset: #eceff1;
+        }
+        body {
+            background-color: var(--color-bg);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen flex flex-col pb-8">
+
+    <div class="max-w-md w-full mx-auto px-4 pt-6 flex-grow flex flex-col">
+        <header class="text-center mb-6">
+            <h1 class="text-2xl font-black tracking-widest text-slate-100 uppercase">Tribal Calendar</h1>
+            <p class="text-xs tracking-widest text-amber-500 font-bold uppercase mt-1">Concentric Shield 364+1 Day System</p>
+        </header>
+
+        <!-- Dynamic Alignment Banner showing today's exact position -->
+        <div class="mb-4 p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-4">
+            <div class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse shrink-0"></div>
+            <div>
+                <p class="text-[10px] tracking-widest text-slate-400 uppercase font-black">Today's Aligned Date</p>
+                <p id="today-banner-text" class="text-sm font-bold text-slate-200">Calculating today's moon...</p>
+            </div>
+        </div>
+
+        <!-- Double-Half Selector Tabs -->
+        <div class="grid grid-cols-3 gap-1 mb-6 text-center text-xs font-bold uppercase tracking-widest">
+            <button id="tab-inner" onclick="switchHalf('inner')" class="py-3 rounded-lg border border-emerald-500/20 bg-emerald-950/10 text-emerald-400 transition-all duration-200">
+                Inner Field<span class="block text-[9px] font-normal text-slate-500">Moons 1-6</span>
+            </button>
+            <button id="tab-reset" onclick="switchHalf('reset')" class="py-3 rounded-lg border border-slate-700 bg-slate-950 text-slate-400 transition-all duration-200">
+                Reset Day<span class="block text-[9px] font-normal text-slate-500">Intercalary</span>
+            </button>
+            <button id="tab-outer" onclick="switchHalf('outer')" class="py-3 rounded-lg border border-amber-500/20 bg-amber-950/10 text-amber-500 transition-all duration-200">
+                Outer Hull<span class="block text-[9px] font-normal text-slate-500">Moons 7-13</span>
+            </button>
+        </div>
+
+        <!-- Sub-selector for the specific Moon within the selected half -->
+        <div id="moon-picker" class="flex gap-2 overflow-x-auto pb-3 mb-6 scroll-smooth snap-x">
+            <!-- Dynamically populated buttons for Moons -->
+        </div>
+
+        <!-- Moon Card Header Display -->
+        <div id="moon-header-card" class="p-4 rounded-xl bg-slate-900/50 border border-slate-800 mb-6">
+            <div class="flex justify-between items-start mb-1">
+                <span id="moon-header-range" class="text-xs font-bold text-slate-400">Date Range</span>
+                <span id="moon-header-guardian" class="text-[9px] font-black tracking-widest uppercase px-2 py-0.5 rounded bg-slate-800">Guardian</span>
+            </div>
+            <h2 id="moon-header-title" class="text-xl font-black text-slate-100 uppercase">Moon Title</h2>
+            <p id="moon-header-focus" class="text-xs text-slate-400 leading-relaxed mt-2"></p>
+        </div>
+
+        <!-- The Core 28-Day Grid -->
+        <div class="mb-6">
+            <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-black uppercase text-slate-500 tracking-wider mb-2">
+                <div>Day 1</div><div>Day 2</div><div>Day 3</div><div>Day 4</div><div>Day 5</div><div>Day 6</div><div>Day 7</div>
+            </div>
+            <div id="calendar-grid" class="grid grid-cols-7 gap-2">
+                <!-- 28 Day cells dynamically rendered here -->
+            </div>
+        </div>
+
+        <!-- Interactive Day Details and Custom Decrees Log -->
+        <div id="day-detail-panel" class="p-5 rounded-xl bg-slate-900 border border-slate-800 mt-auto">
+            <div class="flex justify-between items-center mb-3">
+                <div>
+                    <span id="selected-day-label" class="text-[10px] font-black tracking-widest uppercase text-emerald-400">Day 1</span>
+                    <h3 id="selected-day-gregorian" class="text-lg font-black text-slate-100">June 20, 2026</h3>
+                </div>
+                <div class="text-right">
+                    <span id="selected-day-law" class="text-[9px] font-black tracking-widest uppercase px-2 py-1 rounded bg-emerald-950/50 text-emerald-400">Four Sisters Law</span>
+                </div>
+            </div>
+            
+            <label class="block text-[10px] tracking-widest font-black text-slate-500 uppercase mb-2">Record Daily Decree / Historical Notes</label>
+            <textarea 
+                id="day-note-input" 
+                class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-sm text-slate-200 placeholder-slate-700 focus:outline-none focus:border-slate-700 focus:ring-1 focus:ring-slate-700" 
+                rows="4" 
+                placeholder="Log activities, observations, defense configurations, or alignments for this specific day..."
+            ></textarea>
+            <div class="flex justify-between items-center mt-3 text-[10px] text-slate-500">
+                <span>Stored locally on this device</span>
+                <button id="save-indicator" class="text-emerald-500 font-bold uppercase tracking-wider hidden">Saved ✓</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Exact calendar metadata anchored to May 20, 2026, through May 20, 2027
+        const CALENDAR_DB = [
+            { id: 1, name: "Kaxwi-wi", common: "Emerging Leaf Moon", start: "2026-05-20", end: "2026-06-17", type: "inner", guardian: "Albino Hawk", focus: "Spring planting, external baseline health, and establishing youth education protocols." },
+            { id: 2, name: "Nyep-wi", common: "Strong Sap Moon", start: "2026-06-17", end: "2026-07-15", type: "inner", guardian: "Albino Hawk", focus: "Building mutual agreements, ensuring absolute transparency, and tracking family lineage." },
+            { id: 3, name: "Xą-wi", common: "Open Bloom Moon", start: "2026-07-15", end: "2026-08-12", type: "inner", guardian: "Albino Hawk", focus: "Resolving internal friction, active family accountability, and non-shame coaching." },
+            { id: 4, name: "Asi-wi", common: "High Sun Moon", start: "2026-08-12", end: "2026-09-09", type: "inner", guardian: "Albino Hawk", focus: "Community gatherings, group physical fitness, and baseline environmental tracking." },
+            { id: 5, name: "Okax-wi", common: "First Grain Moon", start: "2026-09-09", end: "2026-10-07", type: "inner", guardian: "Albino Hawk", focus: "Harvest celebrations, testing fair trade frameworks, and structural reciprocity." },
+            { id: 6, name: "Wasu-wi", common: "Abundant Stalk Moon", start: "2026-10-07", end: "2026-11-04", type: "inner", guardian: "Albino Hawk", focus: "Final crop inventory, physical resources processing, and planning for the cold shift." },
+            { id: 7, name: "Puti-wi", common: "The Crack of the Husk", start: "2026-11-04", end: "2026-11-05", type: "reset", guardian: "Dual Balance", focus: "The Reset Day Out of Time. Resolution of all internal debts, absolute internal peace, full family alignment council." },
+            { id: 8, name: "Mąksi-wi", common: "Flint Shell Moon", start: "2026-11-05", end: "2026-12-03", type: "outer", guardian: "Black Bobcat", focus: "Hardening physical defenses, legal auditing, securing family resources, perimeter locking." },
+            { id: 9, name: "Pexą-wi", common: "Sharp Frost Moon", start: "2026-12-03", end: "2026-12-31", type: "outer", guardian: "Black Bobcat", focus: "Testing perimeter resilience, tight boundary keeping, strategic isolation from outside noise." },
+            { id: 10, name: "Wani-wi", common: "Deep Cold Moon", start: "2026-12-31", end: "2027-01-28", type: "outer", guardian: "Black Bobcat", focus: "Deep lineage study, internal tactical mapping, and strategic self-defense training." },
+            { id: 11, name: "Wahu-wi", common: "Bare Bone Moon", start: "2027-01-28", end: "2027-02-25", type: "outer", guardian: "Black Bobcat", focus: "Endurance testing, resource rationing, and structural fortification of the home layout." },
+            { id: 12, name: "Amąi-wi", common: "Frozen Earth Moon", start: "2027-02-25", end: "2027-03-25", type: "outer", guardian: "Black Bobcat", focus: "Soil and baseline tracking, planning future logical plays in secret, protecting core assets." },
+            { id: 13, name: "Asna-wi", common: "Thaw Moon", start: "2027-03-25", end: "2027-04-22", type: "outer", guardian: "Black Bobcat", focus: "Scouting external forces, identifying regional changes, and evaluating defensive boundaries." },
+            { id: 14, name: "Transition", common: "The Returning Return", start: "2027-04-22", end: "2027-05-20", type: "outer", guardian: "Dual Shield", focus: "Auditing year-long defensive durability, finalizing new laws, preparing to open the gate." }
+        ];
+
+        // Global State variables
+        let currentSelectedHalf = "inner";
+        let currentSelectedMoonIndex = 0;
+        let currentSelectedDayOfMoon = 1; // 1-28 for standard moons, 1 for reset day
+
+        // Convert dates correctly without timezone offsets causing shifts
+        function parseDateLocal(dateStr) {
+            const [year, month, day] = dateStr.split('-').map(Number);
+            return new Date(year, month - 1, day);
+        }
+
+        function getActiveGregorianPosition() {
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            
+            for (let i = 0; i < CALENDAR_DB.length; i++) {
+                const start = parseDateLocal(CALENDAR_DB[i].start);
+                const end = parseDateLocal(CALENDAR_DB[i].end);
+                
+                if (today >= start && today < end) {
+                    const daysDiff = Math.floor((today - start) / (1000 * 60 * 60 * 24)) + 1;
+                    return { moonIndex: i, dayOfMoon: daysDiff };
+                }
+            }
+            return null; // Outside programmed range
+        }
+
+        function switchHalf(halfType) {
+            currentSelectedHalf = halfType;
+            
+            // Adjust active UI tabs styling
+            const tabs = {
+                inner: { el: document.getElementById('tab-inner'), activeClass: 'bg-emerald-950/40 text-emerald-400 border-emerald-500' },
+                reset: { el: document.getElementById('tab-reset'), activeClass: 'bg-slate-800 text-slate-100 border-slate-400' },
+                outer: { el: document.getElementById('tab-outer'), activeClass: 'bg-amber-950/40 text-amber-400 border-amber-500' }
+            };
+
+            Object.keys(tabs).forEach(key => {
+                const item = tabs[key];
+                if (key === halfType) {
+                    item.el.className = `py-3 rounded-lg border text-center transition-all duration-200 ${item.activeClass}`;
+                } else {
+                    item.el.className = 'py-3 rounded-lg border border-slate-800 bg-slate-950/50 text-slate-500 text-center transition-all duration-200';
+                }
+            });
+
+            // Auto-select first moon in the chosen seasonal category
+            const matchingMoons = CALENDAR_DB.filter(m => m.type === halfType);
+            if (matchingMoons.length > 0) {
+                const realIndex = CALENDAR_DB.indexOf(matchingMoons[0]);
+                selectMoon(realIndex);
+            }
+        }
+
+        function renderMoonPicker() {
+            const picker = document.getElementById('moon-picker');
+            picker.innerHTML = "";
+
+            CALENDAR_DB.forEach((moon, idx) => {
+                if (moon.type !== currentSelectedHalf) return;
+
+                const btn = document.createElement('button');
+                const cleanName = moon.id === 7 ? moon.name : `Moon ${moon.id > 7 ? moon.id - 1 : moon.id}`;
+                
+                btn.className = `snap-start shrink-0 px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider border transition-all duration-200 ${
+                    idx === currentSelectedMoonIndex 
+                        ? (moon.type === 'inner' ? 'bg-emerald-950 border-emerald-500 text-emerald-400' : moon.type === 'outer' ? 'bg-amber-950 border-amber-500 text-amber-400' : 'bg-slate-800 border-slate-300 text-slate-100')
+                        : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'
+                }`;
+                btn.innerText = cleanName;
+                btn.onclick = () => selectMoon(idx);
+                picker.appendChild(btn);
+            });
+        }
+
+        function selectMoon(index) {
+            currentSelectedMoonIndex = index;
+            currentSelectedDayOfMoon = 1; // Reset selection back to Day 1
+            renderMoonPicker();
+            renderCalendar();
+        }
+
+        function getGregorianDateForDay(moonIndex, dayNum) {
+            const moon = CALENDAR_DB[moonIndex];
+            const startDate = parseDateLocal(moon.start);
+            startDate.setDate(startDate.getDate() + (dayNum - 1));
+            return startDate;
+        }
+
+        function formatGregorianDate(date) {
+            return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+        }
+
+        function renderCalendar() {
+            const moon = CALENDAR_DB[currentSelectedMoonIndex];
+            const grid = document.getElementById('calendar-grid');
+            grid.innerHTML = "";
+
+            // Dynamic header details updates
+            document.getElementById('moon-header-title').innerText = moon.id === 7 ? moon.name : `Moon ${moon.id > 7 ? moon.id - 1 : moon.id}: ${moon.name}`;
+            document.getElementById('moon-header-focus').innerText = moon.focus;
+            document.getElementById('moon-header-guardian').innerText = `Guard: ${moon.guardian}`;
+            
+            const startFormat = parseDateLocal(moon.start).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const endFormat = parseDateLocal(moon.end).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            document.getElementById('moon-header-range').innerText = `${startFormat} — ${endFormat}`;
+
+            // Adjust grid borders and alignments dynamically based on seasons
+            const colorClass = moon.type === 'inner' ? 'border-emerald-500 text-emerald-400' : moon.type === 'outer' ? 'border-amber-500 text-amber-400' : 'border-slate-300 text-slate-100';
+
+            const totalDays = moon.type === 'reset' ? 1 : 28;
+
+            for (let d = 1; d <= totalDays; d++) {
+                const dayBtn = document.createElement('button');
+                const gregDate = getGregorianDateForDay(currentSelectedMoonIndex, d);
+                
+                // Track active daily status
+                const today = new Date();
+                today.setHours(0,0,0,0);
+                const isToday = gregDate.getTime() === today.getTime();
+                
+                // Verify if local note exists for this specific day
+                const savedNoteKey = `tribal_note_${currentSelectedMoonIndex}_day_${d}`;
+                const hasNote = !!localStorage.getItem(savedNoteKey);
+
+                dayBtn.className = `relative p-3 rounded-lg border text-center transition-all duration-150 flex flex-col justify-between items-center h-14 ${
+                    d === currentSelectedDayOfMoon
+                        ? (moon.type === 'inner' ? 'bg-emerald-950/50 border-emerald-500 ring-2 ring-emerald-500/20' : moon.type === 'outer' ? 'bg-amber-950/50 border-amber-500 ring-2 ring-amber-500/20' : 'bg-slate-800 border-slate-300 ring-2 ring-slate-300/20')
+                        : 'bg-slate-950/50 border-slate-800/80 hover:border-slate-700'
+                } ${isToday ? 'ring-2 ring-blue-500 border-blue-500' : ''}`;
+
+                dayBtn.onclick = () => selectDay(d);
+
+                dayBtn.innerHTML = `
+                    <span class="text-xs font-black tracking-wide">${d}</span>
+                    <span class="text-[8px] font-bold text-slate-500">${gregDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                    ${hasNote ? '<span class="absolute top-1 right-1 w-1.5 h-1.5 bg-sky-400 rounded-full"></span>' : ''}
+                    ${isToday ? '<span class="absolute -top-1 left-1/2 -translate-x-1/2 text-[7px] font-black uppercase px-1 rounded bg-blue-500 text-white tracking-widest scale-75">Today</span>' : ''}
+                `;
+
+                grid.appendChild(dayBtn);
+            }
+
+            selectDay(currentSelectedDayOfMoon);
+        }
+
+        function selectDay(dayNum) {
+            currentSelectedDayOfMoon = dayNum;
+            
+            // Re-render only grid cells to update styling selections
+            const buttons = document.getElementById('calendar-grid').children;
+            const moon = CALENDAR_DB[currentSelectedMoonIndex];
+            
+            for (let i = 0; i < buttons.length; i++) {
+                const btn = buttons[i];
+                const d = i + 1;
+                
+                const gregDate = getGregorianDateForDay(currentSelectedMoonIndex, d);
+                const today = new Date();
+                today.setHours(0,0,0,0);
+                const isToday = gregDate.getTime() === today.getTime();
+
+                if (d === currentSelectedDayOfMoon) {
+                    btn.className = `relative p-3 rounded-lg border text-center transition-all duration-150 flex flex-col justify-between items-center h-14 ${
+                        moon.type === 'inner' ? 'bg-emerald-950/50 border-emerald-500 ring-2 ring-emerald-500/20' : moon.type === 'outer' ? 'bg-amber-950/50 border-amber-500 ring-2 ring-amber-500/20' : 'bg-slate-800 border-slate-300 ring-2 ring-slate-300/20'
+                    } ${isToday ? 'ring-2 ring-blue-500 border-blue-500' : ''}`;
+                } else {
+                    btn.className = `relative p-3 rounded-lg border text-center transition-all duration-150 flex flex-col justify-between items-center h-14 bg-slate-950/50 border-slate-800/80 hover:border-slate-700 ${isToday ? 'ring-2 ring-blue-500 border-blue-500' : ''}`;
+                }
+            }
+
+            // Populate the interactive detail display panel
+            const targetDate = getGregorianDateForDay(currentSelectedMoonIndex, dayNum);
+            document.getElementById('selected-day-gregorian').innerText = formatGregorianDate(targetDate);
+            document.getElementById('selected-day-label').innerText = moon.id === 7 ? `Reset Alignment` : `Moon Day ${dayNum}`;
+
+            const lawLabel = document.getElementById('selected-day-law');
+            if (moon.type === 'inner') {
+                lawLabel.innerText = "Four Sisters Law";
+                lawLabel.className = "text-[9px] font-black tracking-widest uppercase px-2 py-1 rounded bg-emerald-950/50 text-emerald-400 border border-emerald-500/20";
+            } else if (moon.type === 'outer') {
+                lawLabel.innerText = "Black Walnut Law";
+                lawLabel.className = "text-[9px] font-black tracking-widest uppercase px-2 py-1 rounded bg-amber-950/50 text-amber-500 border border-amber-500/20";
+            } else {
+                lawLabel.innerText = "Intercalary Gap";
+                lawLabel.className = "text-[9px] font-black tracking-widest uppercase px-2 py-1 rounded bg-slate-800 text-slate-100 border border-slate-600";
+            }
+
+            // Retrieve and assign notes
+            const inputField = document.getElementById('day-note-input');
+            const savedNoteKey = `tribal_note_${currentSelectedMoonIndex}_day_${dayNum}`;
+            inputField.value = localStorage.getItem(savedNoteKey) || '';
+        }
+
+        // Setup auto-save listener on keyup event
+        document.getElementById('day-note-input').addEventListener('input', (e) => {
+            const savedNoteKey = `tribal_note_${currentSelectedMoonIndex}_day_${currentSelectedDayOfMoon}`;
+            localStorage.setItem(savedNoteKey, e.target.value);
+            
+            // Show brief green saving confirmation element
+            const saver = document.getElementById('save-indicator');
+            saver.classList.remove('hidden');
+            setTimeout(() => {
+                saver.classList.add('hidden');
+            }, 800);
+
+            // Dynamically refresh tiny saved dot markers on calendar grid
+            const buttons = document.getElementById('calendar-grid').children;
+            const currentButton = buttons[currentSelectedDayOfMoon - 1];
+            if (currentButton) {
+                let dot = currentButton.querySelector('.absolute.top-1.right-1');
+                if (e.target.value) {
+                    if (!dot) {
+                        const newDot = document.createElement('span');
+                        newDot.className = 'absolute top-1 right-1 w-1.5 h-1.5 bg-sky-400 rounded-full';
+                        currentButton.appendChild(newDot);
+                    }
+                } else {
+                    if (dot) dot.remove();
+                }
+            }
+        });
+
+        // Initialize and lock focus on current calendar position on application startup
+        window.onload = function() {
+            const activePos = getActiveGregorianPosition();
+            
+            if (activePos) {
+                const currentMoon = CALENDAR_DB[activePos.moonIndex];
+                const moonNameText = currentMoon.id === 7 ? currentMoon.name : `Moon ${currentMoon.id > 7 ? currentMoon.id - 1 : currentMoon.id}: ${currentMoon.name}`;
+                document.getElementById('today-banner-text').innerText = `${moonNameText} — Day ${activePos.dayOfMoon}`;
+                
+                // Pre-load current position inside view container
+                currentSelectedHalf = currentMoon.type;
+                currentSelectedMoonIndex = activePos.moonIndex;
+                currentSelectedDayOfMoon = activePos.dayOfMoon;
+            } else {
+                document.getElementById('today-banner-text').innerText = "Today's date is outside programmed 2026-2027 cycle limits.";
+                currentSelectedHalf = "inner";
+                currentSelectedMoonIndex = 0;
+                currentSelectedDayOfMoon = 1;
+            }
+
+            switchHalf(currentSelectedHalf);
+            // Lock onto current moon on picker view
+            selectMoon(currentSelectedMoonIndex);
+            selectDay(currentSelectedDayOfMoon);
+        };
+    </script>
+</body>
+</html>
